@@ -1,0 +1,12 @@
+---
+title: "viz_2"
+author: "Xue Zhang"
+date: "2023-10-03"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(patchwork)
+```
+

@@ -30,8 +30,6 @@ weather_df =
     tmax = tmax / 10) |>
   select(name, id, everything())
 
-
-
 weather_df
 ```
 
@@ -60,8 +58,6 @@ ggp_nyc_weather =
   filter(name == "CentralPark_NY") |>
   ggplot(aes(x = tmin, y = tmax)) +
   geom_point()
-
-  
   
 ```
 
@@ -211,4 +207,30 @@ ggplot(weather_df, aes(x = tmax, y = name)) +
 ```{r}
 ggplot(weather_df, aes(x = tmax, y = name)) +
   geom_density_ridges(scale = .85)
+```
+
+
+
+
+## saving and embedding plots
+
+```{r}
+ggp_weather = 
+  weather_df |>
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_point()
+ggp_weather 
+
+ggsave("results/ggp_weather.pdf", ggp_weather)
+
+```
+
+```{r, fig.width = 8, fig.height = 5}
+ggp_weather
+```
+
+
+
+```{r, fig.width = 6, fig.asp = .6}
+ggp_weather
 ```

@@ -1,5 +1,5 @@
 ---
-title: "EDA"
+title: "EDA: Numeric summaries"
 author: "Xue Zhang"
 date: "2023-10-05"
 output: github_document
@@ -7,6 +7,10 @@ output: github_document
 
 ```{r setup, include=FALSE}
 library(tidyverse)
+```
+
+```{r}
+
 ```
 
 Example
@@ -39,6 +43,7 @@ weather_df |>
   geom_histogram()
 ```
 
+here are the big outliers
 
 ```{r}
 weather_df |>
@@ -52,15 +57,14 @@ weather_df |>
   geom_point(alpha = .75)
 ```
 
-
-`group_by`
+## Grouping
 
 ```{r}
 weather_df |>
   group_by(name, month)
 ```
 
-Counting things
+## Counting 
 
 ```{r}
 weather_df |>
@@ -78,9 +82,47 @@ weather_df |>
 
 ```{r}
 weather_df |>
-  count(month, name = "n_obs")
+  count(name, month) |>
+  pivot_wider(
+    names_from = name,
+    values_from = n
+  )
 ```
 
+
+## General summaries
+
+```{r}
+weather_df |>
+  group_by(name, month) |>
+  summarize(
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    median_tmax = median(tmax, na.rm = TRUE),
+    sd_tmax = sd(tmax, na.rm = TRUE)
+  )
+```
+
+
+```{r}
+weather_df |>
+  group_by(name, month) |>
+  summarize(mean_tmax = mean(tmax, na.rm = TRUE)) |>
+  ggplot(aes(x = month, y = mean_tmax, color = name)) +
+  geom_point() +
+  geom_line()
+```
+
+
+```{r}
+weather_df |>
+  group_by(name, month) |>
+  summarize(mean_tmax = mean(tmax, na.rm = TRUE)) |>
+  pivot_wider(
+    names_from = name,
+    values_from = mean_tmax
+  ) |>
+  knitr::kable(digits = 2)
+```
 
 ```{r}
 weather_df |>
@@ -175,7 +217,14 @@ weather_df |>
 ```
 
 
-Grouped mutate
+## Grouped mutate
+
+```{r}
+weather_df |>
+  group_by(name) |>
+  mutate(
+    mean_tmax = mean(tmax, na.rm = TRUE))
+```
 
 ```{r}
 weather_df |>
@@ -184,13 +233,12 @@ weather_df |>
     mean_tmax = mean(tmax, na.rm = TRUE),
     centered_tmax = tmax - mean_tmax) |>
   ggplot(aes(x = date, y = centered_tmax, color = name)) +
-    geom_point()
+  geom_point()
 ```
 
 
 
 Window functions
-
 
 ```{r}
 weather_df |>
@@ -199,21 +247,26 @@ weather_df |>
 ```
 
 
-
 ```{r}
 weather_df |>
   group_by(name, month) |>
-  filter(min_rank(tmax) < 2)
+  mutate(tmax_rank = min_rank(tmax)) |>
+  filter(tmax_rank < 2)
 ```
 
+
+
+
+
+
+
+logs
 
 ```{r}
 weather_df |>
-  group_by(name, month) |>
-  filter(min_rank(desc(tmax)) < 4)
+  group_by(name) |>
+  mutate(yesterday_tmax = lag(tmax, 3))
 ```
-
-
 
 ```{r}
 weather_df |>

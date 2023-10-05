@@ -1,4 +1,4 @@
-EDA
+EDA: Numeric summaries
 ================
 Xue Zhang
 2023-10-05
@@ -26,21 +26,21 @@ select(name, id, everything())
 
     ## using cached file: /Users/xuezhang/Library/Caches/org.R-project.R/R/rnoaa/noaa_ghcnd/USW00094728.dly
 
-    ## date created (size, mb): 2023-10-03 10:32:18.645481 (8.525)
+    ## date created (size, mb): 2023-10-05 10:34:12.674646 (8.527)
 
-    ## file min/max dates: 1869-01-01 / 2023-09-30
+    ## file min/max dates: 1869-01-01 / 2023-10-31
 
     ## using cached file: /Users/xuezhang/Library/Caches/org.R-project.R/R/rnoaa/noaa_ghcnd/USW00022534.dly
 
-    ## date created (size, mb): 2023-10-03 10:32:36.518721 (3.83)
+    ## date created (size, mb): 2023-10-05 10:34:27.331271 (3.832)
 
-    ## file min/max dates: 1949-10-01 / 2023-09-30
+    ## file min/max dates: 1949-10-01 / 2023-10-31
 
     ## using cached file: /Users/xuezhang/Library/Caches/org.R-project.R/R/rnoaa/noaa_ghcnd/USS0023B17S.dly
 
-    ## date created (size, mb): 2023-10-03 10:32:35.685043 (0.994)
+    ## date created (size, mb): 2023-10-05 10:34:32.015011 (0.997)
 
-    ## file min/max dates: 1999-09-01 / 2023-09-30
+    ## file min/max dates: 1999-09-01 / 2023-10-31
 
 Initial numeric explorations
 
@@ -54,7 +54,9 @@ weather_df |>
 
     ## Warning: Removed 15 rows containing non-finite values (`stat_bin()`).
 
-![](EDA_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+![](EDA_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+here are the big outliers
 
 ``` r
 weather_df |>
@@ -75,9 +77,9 @@ weather_df |>
   geom_point(alpha = .75)
 ```
 
-![](EDA_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](EDA_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
-`group_by`
+## Grouping
 
 ``` r
 weather_df |>
@@ -100,7 +102,7 @@ weather_df |>
     ## 10 CentralPark_NY USW00094728 2021-01-10     0   5    -1.6 2021-01-01
     ## # ℹ 2,180 more rows
 
-Counting things
+## Counting
 
 ``` r
 weather_df |>
@@ -150,23 +152,113 @@ weather_df |>
 
 ``` r
 weather_df |>
-  count(month, name = "n_obs")
+  count(name, month) |>
+  pivot_wider(
+    names_from = name,
+    values_from = n
+  )
 ```
 
-    ## # A tibble: 24 × 2
-    ##    month      n_obs
-    ##    <date>     <int>
-    ##  1 2021-01-01    93
-    ##  2 2021-02-01    84
-    ##  3 2021-03-01    93
-    ##  4 2021-04-01    90
-    ##  5 2021-05-01    93
-    ##  6 2021-06-01    90
-    ##  7 2021-07-01    93
-    ##  8 2021-08-01    93
-    ##  9 2021-09-01    90
-    ## 10 2021-10-01    93
+    ## # A tibble: 24 × 4
+    ##    month      CentralPark_NY Molokai_HI Weatherhole_WA
+    ##    <date>              <int>      <int>          <int>
+    ##  1 2021-01-01             31         31             31
+    ##  2 2021-02-01             28         28             28
+    ##  3 2021-03-01             31         31             31
+    ##  4 2021-04-01             30         30             30
+    ##  5 2021-05-01             31         31             31
+    ##  6 2021-06-01             30         30             30
+    ##  7 2021-07-01             31         31             31
+    ##  8 2021-08-01             31         31             31
+    ##  9 2021-09-01             30         30             30
+    ## 10 2021-10-01             31         31             31
     ## # ℹ 14 more rows
+
+## General summaries
+
+``` r
+weather_df |>
+  group_by(name, month) |>
+  summarize(
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    median_tmax = median(tmax, na.rm = TRUE),
+    sd_tmax = sd(tmax, na.rm = TRUE)
+  )
+```
+
+    ## `summarise()` has grouped output by 'name'. You can override using the
+    ## `.groups` argument.
+
+    ## # A tibble: 72 × 5
+    ## # Groups:   name [3]
+    ##    name           month      mean_tmax median_tmax sd_tmax
+    ##    <chr>          <date>         <dbl>       <dbl>   <dbl>
+    ##  1 CentralPark_NY 2021-01-01      4.27         5      3.34
+    ##  2 CentralPark_NY 2021-02-01      3.87         2.8    3.99
+    ##  3 CentralPark_NY 2021-03-01     12.3         12.2    6.91
+    ##  4 CentralPark_NY 2021-04-01     17.6         18.0    5.26
+    ##  5 CentralPark_NY 2021-05-01     22.1         22.2    5.63
+    ##  6 CentralPark_NY 2021-06-01     28.1         27.8    4.32
+    ##  7 CentralPark_NY 2021-07-01     28.4         28.3    3.17
+    ##  8 CentralPark_NY 2021-08-01     28.8         28.3    2.95
+    ##  9 CentralPark_NY 2021-09-01     24.8         24.4    2.52
+    ## 10 CentralPark_NY 2021-10-01     19.9         20.6    3.66
+    ## # ℹ 62 more rows
+
+``` r
+weather_df |>
+  group_by(name, month) |>
+  summarize(mean_tmax = mean(tmax, na.rm = TRUE)) |>
+  ggplot(aes(x = month, y = mean_tmax, color = name)) +
+  geom_point() +
+  geom_line()
+```
+
+    ## `summarise()` has grouped output by 'name'. You can override using the
+    ## `.groups` argument.
+
+![](EDA_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+``` r
+weather_df |>
+  group_by(name, month) |>
+  summarize(mean_tmax = mean(tmax, na.rm = TRUE)) |>
+  pivot_wider(
+    names_from = name,
+    values_from = mean_tmax
+  ) |>
+  knitr::kable(digits = 2)
+```
+
+    ## `summarise()` has grouped output by 'name'. You can override using the
+    ## `.groups` argument.
+
+| month      | CentralPark_NY | Molokai_HI | Weatherhole_WA |
+|:-----------|---------------:|-----------:|---------------:|
+| 2021-01-01 |           4.27 |      27.62 |           0.80 |
+| 2021-02-01 |           3.87 |      26.37 |          -0.79 |
+| 2021-03-01 |          12.29 |      25.86 |           2.62 |
+| 2021-04-01 |          17.61 |      26.57 |           6.10 |
+| 2021-05-01 |          22.08 |      28.58 |           8.20 |
+| 2021-06-01 |          28.06 |      29.59 |          15.25 |
+| 2021-07-01 |          28.35 |      29.99 |          17.34 |
+| 2021-08-01 |          28.81 |      29.52 |          17.15 |
+| 2021-09-01 |          24.79 |      29.67 |          12.65 |
+| 2021-10-01 |          19.93 |      29.13 |           5.48 |
+| 2021-11-01 |          11.54 |      28.85 |           3.53 |
+| 2021-12-01 |           9.59 |      26.19 |          -2.10 |
+| 2022-01-01 |           2.85 |      26.61 |           3.61 |
+| 2022-02-01 |           7.65 |      26.83 |           2.99 |
+| 2022-03-01 |          11.99 |      27.73 |           3.42 |
+| 2022-04-01 |          15.81 |      27.72 |           2.46 |
+| 2022-05-01 |          22.25 |      28.28 |           5.81 |
+| 2022-06-01 |          26.09 |      29.16 |          11.13 |
+| 2022-07-01 |          30.72 |      29.53 |          15.86 |
+| 2022-08-01 |          30.50 |      30.70 |          18.83 |
+| 2022-09-01 |          24.92 |      30.41 |          15.21 |
+| 2022-10-01 |          17.43 |      29.22 |          11.88 |
+| 2022-11-01 |          14.02 |      27.96 |           2.14 |
+| 2022-12-01 |           6.76 |      27.35 |          -0.46 |
 
 ``` r
 weather_df |>
@@ -336,7 +428,7 @@ weather_df |>
 
     ## Warning: Removed 1 row containing missing values (`geom_line()`).
 
-![](EDA_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](EDA_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 ``` r
 weather_df |>
@@ -378,7 +470,30 @@ weather_df |>
 | 2022-11-01 |           14.0 |       28.0 |            2.1 |
 | 2022-12-01 |            6.8 |       27.3 |             NA |
 
-Grouped mutate
+## Grouped mutate
+
+``` r
+weather_df |>
+  group_by(name) |>
+  mutate(
+    mean_tmax = mean(tmax, na.rm = TRUE))
+```
+
+    ## # A tibble: 2,190 × 8
+    ## # Groups:   name [3]
+    ##    name           id          date        prcp  tmax  tmin month      mean_tmax
+    ##    <chr>          <chr>       <date>     <dbl> <dbl> <dbl> <date>         <dbl>
+    ##  1 CentralPark_NY USW00094728 2021-01-01   157   4.4   0.6 2021-01-01      17.7
+    ##  2 CentralPark_NY USW00094728 2021-01-02    13  10.6   2.2 2021-01-01      17.7
+    ##  3 CentralPark_NY USW00094728 2021-01-03    56   3.3   1.1 2021-01-01      17.7
+    ##  4 CentralPark_NY USW00094728 2021-01-04     5   6.1   1.7 2021-01-01      17.7
+    ##  5 CentralPark_NY USW00094728 2021-01-05     0   5.6   2.2 2021-01-01      17.7
+    ##  6 CentralPark_NY USW00094728 2021-01-06     0   5     1.1 2021-01-01      17.7
+    ##  7 CentralPark_NY USW00094728 2021-01-07     0   5    -1   2021-01-01      17.7
+    ##  8 CentralPark_NY USW00094728 2021-01-08     0   2.8  -2.7 2021-01-01      17.7
+    ##  9 CentralPark_NY USW00094728 2021-01-09     0   2.8  -4.3 2021-01-01      17.7
+    ## 10 CentralPark_NY USW00094728 2021-01-10     0   5    -1.6 2021-01-01      17.7
+    ## # ℹ 2,180 more rows
 
 ``` r
 weather_df |>
@@ -387,12 +502,12 @@ weather_df |>
     mean_tmax = mean(tmax, na.rm = TRUE),
     centered_tmax = tmax - mean_tmax) |>
   ggplot(aes(x = date, y = centered_tmax, color = name)) +
-    geom_point()
+  geom_point()
 ```
 
     ## Warning: Removed 17 rows containing missing values (`geom_point()`).
 
-![](EDA_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](EDA_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
 
 Window functions
 
@@ -421,46 +536,49 @@ weather_df |>
 ``` r
 weather_df |>
   group_by(name, month) |>
-  filter(min_rank(tmax) < 2)
+  mutate(tmax_rank = min_rank(tmax)) |>
+  filter(tmax_rank < 2)
 ```
 
-    ## # A tibble: 92 × 7
+    ## # A tibble: 92 × 8
     ## # Groups:   name, month [72]
-    ##    name           id          date        prcp  tmax  tmin month     
-    ##    <chr>          <chr>       <date>     <dbl> <dbl> <dbl> <date>    
-    ##  1 CentralPark_NY USW00094728 2021-01-29     0  -3.8  -9.9 2021-01-01
-    ##  2 CentralPark_NY USW00094728 2021-02-08     0  -1.6  -8.2 2021-02-01
-    ##  3 CentralPark_NY USW00094728 2021-03-02     0   0.6  -6   2021-03-01
-    ##  4 CentralPark_NY USW00094728 2021-04-02     0   3.9  -2.1 2021-04-01
-    ##  5 CentralPark_NY USW00094728 2021-05-29   117  10.6   8.3 2021-05-01
-    ##  6 CentralPark_NY USW00094728 2021-05-30   226  10.6   8.3 2021-05-01
-    ##  7 CentralPark_NY USW00094728 2021-06-11     0  20.6  16.7 2021-06-01
-    ##  8 CentralPark_NY USW00094728 2021-06-12     0  20.6  16.7 2021-06-01
-    ##  9 CentralPark_NY USW00094728 2021-07-03    86  18.9  15   2021-07-01
-    ## 10 CentralPark_NY USW00094728 2021-08-04     0  24.4  19.4 2021-08-01
+    ##    name           id          date        prcp  tmax  tmin month      tmax_rank
+    ##    <chr>          <chr>       <date>     <dbl> <dbl> <dbl> <date>         <int>
+    ##  1 CentralPark_NY USW00094728 2021-01-29     0  -3.8  -9.9 2021-01-01         1
+    ##  2 CentralPark_NY USW00094728 2021-02-08     0  -1.6  -8.2 2021-02-01         1
+    ##  3 CentralPark_NY USW00094728 2021-03-02     0   0.6  -6   2021-03-01         1
+    ##  4 CentralPark_NY USW00094728 2021-04-02     0   3.9  -2.1 2021-04-01         1
+    ##  5 CentralPark_NY USW00094728 2021-05-29   117  10.6   8.3 2021-05-01         1
+    ##  6 CentralPark_NY USW00094728 2021-05-30   226  10.6   8.3 2021-05-01         1
+    ##  7 CentralPark_NY USW00094728 2021-06-11     0  20.6  16.7 2021-06-01         1
+    ##  8 CentralPark_NY USW00094728 2021-06-12     0  20.6  16.7 2021-06-01         1
+    ##  9 CentralPark_NY USW00094728 2021-07-03    86  18.9  15   2021-07-01         1
+    ## 10 CentralPark_NY USW00094728 2021-08-04     0  24.4  19.4 2021-08-01         1
     ## # ℹ 82 more rows
+
+logs
 
 ``` r
 weather_df |>
-  group_by(name, month) |>
-  filter(min_rank(desc(tmax)) < 4)
+  group_by(name) |>
+  mutate(yesterday_tmax = lag(tmax, 3))
 ```
 
-    ## # A tibble: 269 × 7
-    ## # Groups:   name, month [72]
-    ##    name           id          date        prcp  tmax  tmin month     
-    ##    <chr>          <chr>       <date>     <dbl> <dbl> <dbl> <date>    
-    ##  1 CentralPark_NY USW00094728 2021-01-02    13  10.6   2.2 2021-01-01
-    ##  2 CentralPark_NY USW00094728 2021-01-14     0   9.4   3.9 2021-01-01
-    ##  3 CentralPark_NY USW00094728 2021-01-16   198   8.3   2.8 2021-01-01
-    ##  4 CentralPark_NY USW00094728 2021-02-16   208  10.6   1.1 2021-02-01
-    ##  5 CentralPark_NY USW00094728 2021-02-24     0  12.2   3.9 2021-02-01
-    ##  6 CentralPark_NY USW00094728 2021-02-25     0  10     4.4 2021-02-01
-    ##  7 CentralPark_NY USW00094728 2021-02-27    99  10     3.3 2021-02-01
-    ##  8 CentralPark_NY USW00094728 2021-03-11     0  21.7   6.7 2021-03-01
-    ##  9 CentralPark_NY USW00094728 2021-03-26    48  27.8  11.1 2021-03-01
-    ## 10 CentralPark_NY USW00094728 2021-03-27     0  20.6  10   2021-03-01
-    ## # ℹ 259 more rows
+    ## # A tibble: 2,190 × 8
+    ## # Groups:   name [3]
+    ##    name           id      date        prcp  tmax  tmin month      yesterday_tmax
+    ##    <chr>          <chr>   <date>     <dbl> <dbl> <dbl> <date>              <dbl>
+    ##  1 CentralPark_NY USW000… 2021-01-01   157   4.4   0.6 2021-01-01           NA  
+    ##  2 CentralPark_NY USW000… 2021-01-02    13  10.6   2.2 2021-01-01           NA  
+    ##  3 CentralPark_NY USW000… 2021-01-03    56   3.3   1.1 2021-01-01           NA  
+    ##  4 CentralPark_NY USW000… 2021-01-04     5   6.1   1.7 2021-01-01            4.4
+    ##  5 CentralPark_NY USW000… 2021-01-05     0   5.6   2.2 2021-01-01           10.6
+    ##  6 CentralPark_NY USW000… 2021-01-06     0   5     1.1 2021-01-01            3.3
+    ##  7 CentralPark_NY USW000… 2021-01-07     0   5    -1   2021-01-01            6.1
+    ##  8 CentralPark_NY USW000… 2021-01-08     0   2.8  -2.7 2021-01-01            5.6
+    ##  9 CentralPark_NY USW000… 2021-01-09     0   2.8  -4.3 2021-01-01            5  
+    ## 10 CentralPark_NY USW000… 2021-01-10     0   5    -1.6 2021-01-01            5  
+    ## # ℹ 2,180 more rows
 
 ``` r
 weather_df |>
